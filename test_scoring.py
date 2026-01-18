@@ -15,7 +15,7 @@ def format_context(news_tuple, query):
     query_words = [
         w.lower().strip(string.punctuation) 
         for w in query.split() 
-        if len(w) >= 2 and w.lower().strip(string.punctuation) not in stop_words
+        if len(w) >= 3 and w.lower().strip(string.punctuation) not in stop_words
     ]
     
     articles = []

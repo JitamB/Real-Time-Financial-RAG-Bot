@@ -454,7 +454,7 @@ def run_pipeline():
         articles.sort(key=lambda x: x['score'], reverse=True)
         
         # Take top 5 most relevant articles
-        top_articles = articles[:5]
+        top_articles = articles[:7]
         
         # If less than 5 articles match, fill with most recent articles
         # if len(top_articles) < 5:

@@ -1,0 +1,141 @@
+/* Import Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+/* Global Reset & Theme */
+html,
+body,
+[class*="css"] {
+    font-family: 'Inter', sans-serif;
+    color: #E0E0E0;
+}
+
+/* Background */
+.stApp {
+    background-color: #0E1117;
+    background-image: radial-gradient(circle at 10% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(0, 122, 255, 0.1) 0%, transparent 20%);
+    background-attachment: fixed;
+}
+
+/* Sidebar Styling */
+section[data-testid="stSidebar"] {
+    background-color: rgba(22, 27, 34, 0.95);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Headers */
+h1,
+h2,
+h3 {
+    color: #FFFFFF !important;
+    font-weight: 600;
+}
+
+h1 {
+    font-size: 2.5rem;
+    letter-spacing: -1px;
+}
+
+/* Hide Streamlit Toolbar & Footer */
+[data-testid="stToolbar"] {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+/* Cards (Glassmorphism) */
+.glass-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s;
+}
+
+.glass-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(76, 175, 80, 0.5);
+}
+
+/* Sidebar News Items */
+.sidebar-news-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.sidebar-news-item.injected {
+    border-left-color: #4CAF50;
+    background: rgba(76, 175, 80, 0.05);
+}
+
+/* Chat Styling */
+.stChatMessage {
+    background-color: transparent !important;
+}
+
+[data-testid="stChatMessageContent"] {
+    /* background-color: rgba(255, 255, 255, 0.05) !important; */
+    /* border: 1px solid rgba(255, 255, 255, 0.1); */
+    border-radius: 12px !important;
+    color: #E0E0E0 !important;
+}
+
+/* Input Fields */
+.stTextInput>div>div>input {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    color: white !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.stTextInput>div>div>input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 1px #4CAF50;
+}
+
+/* Buttons */
+.stButton>button {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.stButton>button:hover {
+    opacity: 0.9;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

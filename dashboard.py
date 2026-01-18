@@ -36,13 +36,15 @@ st.caption("Powered by Pathway | Live Data Injection Demo")
 
 # Data Files
 NEWS_FILE = "processed_news.csv"
-ANSWERS_FILE = "answers.csv" # Keep for backward compatibility/archiving if needed
-ANSWERS_DB = "answers.db"
-QUESTIONS_FILE = "questions.csv"
+ANSWERS_FILE = "./QnA/answers.csv" # Keep for backward compatibility/archiving if needed
+ANSWERS_DB = "./QnA/answers.db"
+QUESTIONS_FILE = "./QnA/questions.csv"
 CHATS_DIR = "chats"
 
 # Ensure chats directory exists
 os.makedirs(CHATS_DIR, exist_ok=True)
+if not os.path.exists("./QnA"):
+    os.makedirs("./QnA", exist_ok=True)
 
 # Initialize session state
 if 'view_mode' not in st.session_state:

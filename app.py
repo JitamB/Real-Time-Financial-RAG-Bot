@@ -12,9 +12,9 @@ load_dotenv()
 # --- Configuration ---
 DATA_FILE = "stream_data.jsonl"
 # DATA_FILE = "processed_news.csv"
-QUESTIONS_FILE = "questions.csv"
-ANSWERS_DB = "answers.db"
-ANSWERS_LOG_FILE = "answers_log.csv" # Internal changelog
+QUESTIONS_FILE = "./QnA/questions.csv"
+ANSWERS_DB = "./QnA/answers.db"
+ANSWERS_LOG_FILE = "./QnA/answers_log.csv" # Internal changelog
 LIVE_DATA_DIR = "live_data/"
 FILE_TRACKER = "file_tracker.json"  # Track processed files to avoid duplicates
 
@@ -564,6 +564,8 @@ def run_pipeline():
 
 if __name__ == "__main__":
     # Ensure structure
+    if not os.path.exists("./QnA"):
+        os.makedirs("./QnA")
     if not os.path.exists(LIVE_DATA_DIR):
         os.makedirs(LIVE_DATA_DIR)
     if not os.path.exists(DATA_FILE):

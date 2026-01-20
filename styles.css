@@ -36,13 +36,49 @@ h1 {
     letter-spacing: -1px;
 }
 
-/* Hide Streamlit Toolbar & Footer */
+/* Hide specific Streamlit elements but keep the container for the Sidebar Toggle */
+[data-testid="stDecoration"],
+[data-testid="stDeployButton"],
+[data-testid="stStatusWidget"],
+[data-testid="stMainMenu"] {
+    visibility: hidden !important;
+    display: none !important;
+}
+
+/* Ensure Header is Visible (Parent of Toggle) */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    visibility: visible !important;
+    z-index: 100;
+}
+
+/* Ensure Toolbar container is visible (might hold the toggle in some versions) */
 [data-testid="stToolbar"] {
-    visibility: hidden;
+    visibility: visible !important;
+    background: transparent !important;
+}
+
+/* Style the Sidebar Toggle Button explicitly */
+[data-testid="stSidebarCollapsedControl"] {
+    visibility: visible !important;
+    display: block !important;
+    color: #FFFFFF !important;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 4px;
+    border-radius: 4px;
+    z-index: 100001 !important;
+    /* Ensure it's on top */
+}
+
+/* Hover effect for the toggle */
+[data-testid="stSidebarCollapsedControl"]:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #4CAF50 !important;
 }
 
 footer {
     visibility: hidden;
+    display: none;
 }
 
 /* Cards (Glassmorphism) */

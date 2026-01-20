@@ -1,27 +1,40 @@
 timestamp,query_text,user
-2026-01-18T14:45:43.134189,Who is Jitam?,WebUser
-2026-01-18T14:50:29.520792,Who is JItam?,WebUser
-2026-01-18T15:52:21.672597,GOOGL,WebUser
-2026-01-18T15:59:29.258106,What is GOOGL?,WebUser
-2026-01-18T16:11:37.824759,Hi,WebUser
-2026-01-18T16:15:29.702919,Are you good?,WebUser
-2026-01-18T16:15:54.943210,Good to know that you are good,WebUser
-2026-01-18T16:34:40.274201,Why Supreme Court ordered removal of SHO from duty?,WebUser
-2026-01-18T16:35:41.337772,Supreme Court ordered removal of SHO from duty. What are the consequences?,WebUser
-2026-01-18T17:15:32.749919,Update on Tesla,WebUser
-2026-01-18T17:22:36.333306,Update on AAPL,WebUser
-2026-01-18T17:23:49.591708,JP Morgan on private capital,WebUser
-2026-01-18T17:24:26.034196,JPMorgan on private capital,WebUser
-2026-01-18T18:26:45.612793,JPMorgan on private capital,WebUser
-2026-01-18T20:02:54.475536,Hi,WebUser
-2026-01-18T20:14:32.969237,Hi,WebUser
-2026-01-18T20:15:07.580950,ok,WebUser
-2026-01-18T20:19:09.176116,Hi,WebUser
-2026-01-18T20:19:31.184039,Recent update on AAPL?,WebUser
-2026-01-18T20:23:11.702997,Update on AMZN?,WebUser
-2026-01-18T20:26:26.866463,Great. What's the recent update on AAPL then?,WebUser
-2026-01-18T20:28:47.921948,Hi,WebUser
-2026-01-18T20:29:14.341121,Hello,WebUser
-2026-01-18T20:39:42.391685,How are you?,WebUser
-2026-01-18T20:40:05.593775,Glad to know,WebUser
-2026-01-18T21:11:05.366511,Hi,WebUser
+2026-01-20T22:31:11.270599,Who is Jitam?,WebUser
+2026-01-20T22:31:48.607618,"Previous Context (Last 3 Q&A):
+Q: Who is Jitam?
+A: Jitam Barman is the creator of the project and the author of the report on Extraction Industries in India. He is a student at the Indian Institute of Technology Kharagpur, pursuing a Dual Degree in Metallurgical and Materials Engineering with a minor in Computer Science and Engineering.
+
+Current Question: Is Jitam a student?",WebUser
+2026-01-20T22:32:43.551724,"Previous Context (Last 3 Q&A):
+Q: Who is Jitam?
+A: Jitam Barman is the creator of the project and the author of the report on Extraction Industries in India. He is a student at the Indian Institute of Technology Kharagpur, pursuing a Dual Degree in Metallurgical and Materials Engineering with a minor in Computer Science and Engineering.
+Q: Is Jitam a student?
+A: ⏱️ Analysis timed out. The backend might be busy.
+
+Current Question: Seriously?",WebUser
+2026-01-20T22:34:45.629856,Hi,WebUser
+2026-01-20T22:35:03.851180,Tell me about the friend of Sahil,WebUser
+2026-01-20T22:35:25.953669,Who is Sahil?,WebUser
+2026-01-20T22:37:44.304401,Jitam's school,WebUser
+2026-01-20T22:41:33.054032,Write about the recent news on Google,WebUser
+2026-01-20T22:43:12.575833,Write about the recent news on Google,WebUser
+2026-01-20T22:47:17.824795,What is Jitam's college name?,WebUser
+2026-01-20T22:58:58.467159,Latest update on Google,WebUser
+2026-01-20T23:15:07.411992,"Hi, could you please help me with JItam's data",WebUser
+2026-01-20T23:15:18.073994,Thanks,WebUser
+2026-01-20T23:16:08.920190,Hi,WebUser
+2026-01-20T23:16:53.283273,Hmm,WebUser
+2026-01-20T23:17:15.297008,thabks,WebUser
+2026-01-20T23:21:04.510427,Hi,WebUser
+2026-01-20T23:21:06.027019,Hi,WebUser
+2026-01-20T23:37:32.005379,What's the recent update on Google?,WebUser
+2026-01-20T23:39:26.005455,Do you know the company MyWay?,WebUser
+2026-01-20T23:41:15.933417,What's the recent update on Google?,WebUser
+2026-01-20T23:41:46.107367,What do you know about FERRARI?,WebUser
+2026-01-20T23:43:59.763662,"HI, what's the recent update on google?",WebUser
+2026-01-20T23:44:30.344264,Do you know about the company MyWay?,WebUser
+2026-01-20T23:45:08.783863,Do you now know about the company MyWay?,WebUser
+2026-01-20T23:48:18.266729,"HI, what's the latest update on Google?",WebUser
+2026-01-20T23:49:34.907356,"Hi, what is the recent update on Google?",WebUser
+2026-01-20T23:50:00.911768,Do you know about the company MyWay?,WebUser
+2026-01-20T23:50:23.143612,Do you know MyWay now?,WebUser

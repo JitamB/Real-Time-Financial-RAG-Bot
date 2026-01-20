@@ -18,30 +18,6 @@ ANSWERS_LOG_FILE = "./QnA/answers_log.csv" # Internal changelog
 LIVE_DATA_DIR = "live_data/"
 FILE_TRACKER = "file_tracker.json"  # Track processed files to avoid duplicates
 
-# --- Mock Data Generator (Background Stream) ---
-# COMMENTED OUT - Using real API data instead
-# def mock_data_stream():
-#     # Only runs if DATA_FILE is empty or we want continuous background noise
-#     # For the specific "Live Injection" demo, we can keep this or minimalize it.
-#     stock_symbols = ["AAPL", "GOOGL"]
-#     print(f"Starting mock background stream to {DATA_FILE}...")
-#     while True:
-#         # We write slowly to not flood the demo
-#         time.sleep(60)
-#         import random
-#         symbol = random.choice(stock_symbols)
-#         price_change = round(random.uniform(-1.0, 1.0), 2)
-#         data = {
-#             "timestamp": datetime.datetime.now().isoformat(),
-#             "symbol": symbol,
-#             "title": f"Routine market update for {symbol}",
-#             "content": f"{symbol} trading at {price_change}% change. No major news.",
-#             "source": "Market Ticker"
-#         }
-#         with open(DATA_FILE, "a") as f:
-#             f.write(json.dumps(data) + "\n")
-#             f.flush()
-
 # --- Real Data Fetcher (Alpha Vantage + NewsAPI) ---
 def real_data_stream():
     """Fetch real market data and news using APIs."""
@@ -49,7 +25,19 @@ def real_data_stream():
     
     alpha_vantage_key = os.getenv("ALPHA_VANTAGE_KEY")
     newsapi_key = os.getenv("NEWSAPI_KEY")
-    stock_symbols = ["AAPL", "GOOGL", "MSFT", "AMZN"]
+    # Map symbols to company names for better RAG context matching
+    stock_map = {
+        "AAPL": "Apple",
+        "GOOGL": "Google Alphabet",
+        "MSFT": "Microsoft",
+        "AMZN": "Amazon",
+        "TSLA": "Tesla",
+        "NVDA": "Nvidia",
+        "META": "Meta Facebook",
+        "NFLX": "Netflix",
+        "AMD": "AMD",
+        "INTC": "Intel"
+    }
     
     print(f"Starting REAL data stream to {DATA_FILE}...")
     print(f"Alpha Vantage Key: {'✓ Set' if alpha_vantage_key else '✗ Missing'}")
@@ -57,40 +45,50 @@ def real_data_stream():
     
     while True:
         try:
-            # Fetch stock data from Alpha Vantage
-            if alpha_vantage_key and alpha_vantage_key != "your-alpha-vantage-key":
-                for symbol in stock_symbols:
-                    try:
-                        url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={alpha_vantage_key}"
-                        response = requests.get(url, timeout=10)
-                        if response.status_code == 200:
-                            data = response.json()
-                            if "Global Quote" in data and data["Global Quote"]:
-                                quote = data["Global Quote"]
-                                price = quote.get("05. price", "N/A")
-                                change_percent = quote.get("10. change percent", "0%").rstrip("%")
-                                
-                                stock_data = {
-                                    "timestamp": datetime.datetime.now().isoformat(),
-                                    "symbol": symbol,
-                                    "title": f"Real-time update for {symbol}",
-                                    "content": f"{symbol} trading at ${price}, {change_percent}% change.",
-                                    "source": "Alpha Vantage"
-                                }
-                                
-                                with open(DATA_FILE, "a") as f:
-                                    f.write(json.dumps(stock_data) + "\n")
-                                    f.flush()
-                                print(f"✓ Fetched {symbol}: ${price} ({change_percent}%)")
-                    except Exception as e:
-                        print(f"Error fetching {symbol} from Alpha Vantage: {e}")
+            # Fetch stock data from Yahoo Finance (yfinance)
+            import yfinance as yf
+            
+            for symbol, company_name in stock_map.items():
+                try:
+                    ticker = yf.Ticker(symbol)
+                    # fast_info is usually faster than .info
+                    info = ticker.fast_info
+                    current_price = info.last_price
+                    prev_close = info.previous_close
                     
-                    time.sleep(15)  # Alpha Vantage rate limit: 5 calls/min for free tier
+                    if current_price and prev_close:
+                        change_p = ((current_price - prev_close) / prev_close) * 100
+                        change_percent = f"{change_p:.2f}"
+                        price = f"{current_price:.2f}"
+                        
+                        stock_data = {
+                            "timestamp": datetime.datetime.now().isoformat(),
+                            "symbol": symbol,
+                            "title": f"Real-time update for {company_name} ({symbol})",
+                            "content": f"{company_name} ({symbol}) trading at ${price}, {change_percent}% change.",
+                            "source": "Yahoo finance",
+                            "url": f"https://finance.yahoo.com/quote/{symbol}"
+                        }
+                        
+                        with open(DATA_FILE, "a") as f:
+                            f.write(json.dumps(stock_data) + "\n")
+                            f.flush()
+                        print(f"✓ Fetched {symbol}: ${price} ({change_percent}%)")
+                    else:
+                         print(f"Skipping {symbol}: No price data")
+                         
+                except Exception as e:
+                    print(f"Error fetching {symbol} from yfinance: {e}")
+                
+            time.sleep(20)
+
             
             # Fetch news from NewsAPI
             if newsapi_key and newsapi_key != "your-newsapi-key":
                 try:
-                    url = f"https://newsapi.org/v2/everything?q=stock+market+OR+AAPL+OR+GOOGL+OR+MSFT+OR+AMZN&language=en&sortBy=publishedAt&pageSize=5&apikey={newsapi_key}"
+                    # Dynamically build query
+                    symbols_query = " OR ".join(stock_map.keys())
+                    url = f"https://newsapi.org/v2/everything?q=stock+market+OR+{symbols_query}&language=en&sortBy=publishedAt&pageSize=5&apikey={newsapi_key}"
                     response = requests.get(url, timeout=10)
                     if response.status_code == 200:
                         news_data = response.json()
@@ -100,8 +98,9 @@ def real_data_stream():
                                     "timestamp": datetime.datetime.now().isoformat(),
                                     "symbol": "NEWS",
                                     "title": article.get("title", "No title"),
-                                    "content": article.get("description", "") or article.get("content", "")[:500],
-                                    "source": article.get("source", {}).get("name", "NewsAPI")
+                                    "content": article.get("description", "") or article.get("content", ""),
+                                    "source": article.get("source", {}).get("name", "NewsAPI"),
+                                    "url": article.get("url", "#")
                                 }
                                 
                                 with open(DATA_FILE, "a") as f:
@@ -159,6 +158,10 @@ def sync_snapshot_file():
                     continue
                 
                 if not df.empty and 'timestamp' in df.columns and 'question' in df.columns:
+                     # DEBUG LOGGING
+                     with open("debug_sync.txt", "a") as f:
+                         f.write(f"{datetime.datetime.now()} - Read {len(df)} rows. Columns: {list(df.columns)}\n")
+
                      # Filter for relevant columns
                      # We only care about the latest answer for each question
                      
@@ -180,6 +183,8 @@ def sync_snapshot_file():
                              # Strict Filter:
                              # 1. Skip if question is empty or timestamp doesn't look like a year (202...)
                              if not q or not str(ts).startswith('202'):
+                                 with open("debug_sync.txt", "a") as f:
+                                     f.write(f"Skipping row: q={q}, ts={ts}\n")
                                  continue
                             
                              # 2. Skip if question looks like a diff integer (1 or -1) due to misalignment
@@ -201,6 +206,10 @@ def sync_snapshot_file():
                                  INSERT OR REPLACE INTO answers (timestamp, question, answer, context)
                                  VALUES (?, ?, ?, ?)
                              """, (ts, q, ans, ctx))
+                             
+                             if os.path.exists("debug_sync.txt") and os.path.getsize("debug_sync.txt") < 50000:
+                                 with open("debug_sync.txt", "a") as f:
+                                     f.write(f"Inserted: {q} at {ts}\n")
                          
                          conn.commit()
             
@@ -209,6 +218,77 @@ def sync_snapshot_file():
         except Exception as e:
             print(f"Snapshot sync error: {e}") 
             time.sleep(1)
+
+# --- Pruning Mechanism (Prevents indefinite log growth) ---
+def run_maintenance_tasks():
+    """
+    Periodically prunes:
+    1. QUESTIONS_FILE (keep last 100 mins) - keeps Pathway graph small.
+    2. ANSWERS_LOG_FILE (keep last 10 days) - prevents disk swell.
+    3. ANSWERS_DB (keep last 10 days) - prevents DB bloat.
+    """
+    import pandas as pd
+    import time
+    import datetime
+    import sqlite3
+    
+    print("Starting maintenance/pruning task...")
+    
+    while True:
+        try:
+            now = datetime.datetime.now()
+            
+            # 1. Prune QUESTIONS_FILE (100 mins)
+            if os.path.exists(QUESTIONS_FILE) and os.path.getsize(QUESTIONS_FILE) > 0:
+                try:
+                    df = pd.read_csv(QUESTIONS_FILE)
+                    if 'timestamp' in df.columns:
+                        df['dt'] = pd.to_datetime(df['timestamp'], errors='coerce')
+                        cutoff_q = now - datetime.timedelta(minutes=100)
+                        df_new = df[df['dt'] > cutoff_q].drop(columns=['dt'])
+                        if len(df_new) < len(df):
+                            df_new.to_csv(QUESTIONS_FILE, index=False)
+                            print(f"✓ Pruned {len(df) - len(df_new)} old questions.")
+                except Exception as e:
+                     print(f"Pruning questions error: {e}")
+
+            # 2. Prune ANSWERS_DB (10 Days)
+            try:
+                if os.path.exists(ANSWERS_DB):
+                    cutoff_db = (now - datetime.timedelta(days=10)).isoformat()
+                    with sqlite3.connect(ANSWERS_DB) as conn:
+                        conn.execute("DELETE FROM answers WHERE timestamp < ?", (cutoff_db,))
+                        conn.commit()
+            except Exception as e:
+                print(f"Pruning DB error: {e}")
+
+            # 3. Prune ANSWERS_LOG_FILE (10 Days)
+            # Note: This is a CSV used by Pathway. Pruning it might race with writing,
+            # but since it's an append-only log, a quick rewrite is usually fine in this low-volume setting.
+            if os.path.exists(ANSWERS_LOG_FILE) and os.path.getsize(ANSWERS_LOG_FILE) > 0:
+                try:
+                    # Only prune if file is getting somewhat large (>5MB) to avoid constant rewriting
+                    if os.path.getsize(ANSWERS_LOG_FILE) > 5 * 1024 * 1024:
+                        df = pd.read_csv(ANSWERS_LOG_FILE, on_bad_lines='skip', engine='python')
+                        # Check for 'timestamp' or 'time'
+                        ts_col = 'time' if 'time' in df.columns else 'timestamp'
+                        if ts_col in df.columns:
+                            df['dt'] = pd.to_datetime(df[ts_col], errors='coerce')
+                            cutoff_log = now - datetime.timedelta(days=10)
+                            df_new = df[df['dt'] > cutoff_log].drop(columns=['dt'])
+                            
+                            if len(df_new) < len(df):
+                                df_new.to_csv(ANSWERS_LOG_FILE, index=False)
+                                print(f"✓ Pruned {len(df) - len(df_new)} old log entries from answers_log.")
+                except Exception as e:
+                     print(f"Pruning log error: {e}")
+            
+            # Run every 100 minutes (matches the prune interval roughly)
+            time.sleep(6000)
+            
+        except Exception as e:
+            print(f"Pruning loop error: {e}")
+            time.sleep(6000)
 
 # --- Caching Mechanism ---
 from collections import OrderedDict
@@ -289,6 +369,7 @@ def run_pipeline():
         title: str
         content: str
         source: str
+        url: str
 
     background_stream = pw.io.fs.read(
         DATA_FILE,
@@ -299,10 +380,10 @@ def run_pipeline():
     )
 
     # Note: path must be to the directory
-    # Use plaintext to read file content directly into 'data' column
+    # Use binary to read the whole file as a single blob, then decode
     live_files_stream = pw.io.fs.read(
         LIVE_DATA_DIR,
-        format="plaintext",
+        format="binary",
         mode="streaming",
         with_metadata=False
     )
@@ -320,11 +401,15 @@ def run_pipeline():
             processed_files = {}
     
     @pw.udf
-    def get_file_hash_and_timestamp(content):
+    def get_file_hash_and_timestamp(content_bytes):
         """Generate hash from content and return submission timestamp."""
         import hashlib
         import datetime
-        file_hash = hashlib.md5(content.encode()).hexdigest()
+        # content is bytes now
+        if isinstance(content_bytes, str):
+            content_bytes = content_bytes.encode('utf-8')
+            
+        file_hash = hashlib.md5(content_bytes).hexdigest()
         
         # Check if file was already processed
         if file_hash in processed_files:
@@ -343,18 +428,32 @@ def run_pipeline():
             return timestamp
     
     @pw.udf
-    def extract_file_info(content):
-        """Extract meaningful title from file content."""
+    def decode_and_extract_info(content_bytes):
+        """Decode bytes to string and extract title."""
+        try:
+            text = content_bytes.decode('utf-8')
+        except:
+             # Fallback to latin-1 or ignore errors
+            text = content_bytes.decode('utf-8', errors='ignore')
+            
         # Use first 50 chars as title
-        first_line = content.split('\n')[0][:50]
-        return first_line if first_line else "Injected Data"
+        first_line = text.split('\n')[0][:50]
+        title = first_line if first_line else "Injected Data"
+        return title, text
 
-    files_text = live_files_stream.select(
+    # Select and unpack title/text
+    files_with_text = live_files_stream.select(
         timestamp=get_file_hash_and_timestamp(pw.this.data),
-        symbol=literal("INJECTED", pw.this.data),
-        title=extract_file_info(pw.this.data),
-        content=pw.this.data,
-        source=literal("User Injection", pw.this.data)
+        decoded_info=decode_and_extract_info(pw.this.data)
+    )
+
+    files_text = files_with_text.select(
+        timestamp=pw.this.timestamp,
+        symbol=literal("INJECTED", pw.this.timestamp),
+        title=pw.this.decoded_info[0],
+        content=pw.this.decoded_info[1],
+        source=literal("User Injection", pw.this.timestamp),
+        url=literal("#", pw.this.timestamp)
     )
 
     # Merge all data streams - treat equally
@@ -412,10 +511,13 @@ def run_pipeline():
                      'what', 'who', 'when', 'where', 'why', 'how', 'this', 'that'}
         
         # Extract keywords from query
+        # Replace punctuation with spaces to handle "Jitam's" -> "Jitam s"
+        query_clean = query.translate(str.maketrans(string.punctuation, ' ' * len(string.punctuation)))
+        
         query_words = [
-            w.lower().strip(string.punctuation) 
-            for w in query.split() 
-            if len(w) >= 2 and w.lower().strip(string.punctuation) not in stop_words
+            w.lower().strip() 
+            for w in query_clean.split() 
+            if len(w) >= 2 and w.lower().strip() not in stop_words
         ]
         
         for item in news_tuple:
@@ -517,11 +619,11 @@ def run_pipeline():
                 response = client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
                     messages=[
-                        {"role": "system", "content": "You are a helpful financial analyst. Answer based ONLY on the provided context."},
+                        {"role": "system", "content": "You are a helpful financial analyst. Answer based on the provided context. Ignore any \\n present in the context, don't write them in the answer"},
                         {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"}
                     ],
                     temperature=0.7,
-                    max_tokens=1024
+                    max_tokens=2048
                 )
                 answer = response.choices[0].message.content
                 # Update Cache
@@ -581,5 +683,9 @@ if __name__ == "__main__":
     # Start Snapshot Syncer
     t_sync = threading.Thread(target=sync_snapshot_file, daemon=True)
     t_sync.start()
+    
+    # Start Maintenance Task (Pruning)
+    t_prune = threading.Thread(target=run_maintenance_tasks, daemon=True)
+    t_prune.start()
     
     run_pipeline()

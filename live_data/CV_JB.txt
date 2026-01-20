@@ -1,0 +1,54 @@
+JITAM BARMAN
+Metallurgical and Materials Engineering (M.Tech Dual 5Y)
+Minor in Computer Science and Engineering
+♂phone+91 9547902200 /envel⌢pebarmanjitam@gmail.com /githubJitamB /linkedinjitam-barman
+SUMMARY
+I’m a third-year Dual Degree student at IIT Kharagpur with a strong foundation in Data Science, Machine Learning, and Full-Stack
+Development. Strong in Python, ML pipelines, and React-based systems, with experience building end-to-end applications and
+competition-grade models.
+EDUCATION
+Year Degree/Exam Institute CGPA/Marks
+2028 Dual Degree 5Y Indian Institute of Technology Kharagpur 8.35 / 10
+2023 Class XII, WBCHSE Jenkins School, Coochbehar 93.40%
+2021 Class X, WBBSE Jamaldaha TDH School, Coochbehar 94.43%
+COMPETITIONS
+Bronze OpenSoft Technology General Championship 2025 IIT Kharagpur Mar’25
+• Developed a full-stack employee well-being platform featuring real-time mood tracking and AI chat support
+• Built frontend features using React and Vite, including dashboards, chat interface and dynamic data visualization
+• Implemented secure authentication, role-based access and responsive UI to enhance security and user experience
+Price Prediction Through Textual and Image Data Amazon ML Challenge 2025 Competition Oct’25
+• Engineered features by parsing unstructured text data (RegEx + TF-IDF + Sentence Embedding) and standardizing quantities
+• Fine tuned a pre-trained ResNet50 to extract the product category from the image data with its confidence score
+• Utilized a Stacking Regressor (Ridge) to combine XGBoost and LightGBM, achieving a competitive SMAPE score of 55.70
+PROJECTS
+COMPOSIT 2025 Official Website Team Project Jan - Mar’25
+• Developed and deployed the website, implementing features like event registration, team profiles, and secure user authentication
+• Designed and optimized the UI/UX across all platform sections, resulting in an intuitive, responsive interface using React
+• Developed an admin portal to manage user data and registrations, significantly improving the efficiency of participant tracking
+Voice-Controlled Line Following Robot Car Course Project Apr’24
+Guide Professor: Dr. Vikranth Racherla, Dept. of Mechanical Engineering, IITKGP
+• Engineered a voice-activated, line-following algorithm in Arduino C, utilizing multi-sensor feedback (TCS3200) and PID-like logic
+for precise color-path navigation
+• Optimized power management and hardware interfacing to resolve multisource voltage conflicts and ensure efficient dual-motor
+control via limited PWM pins
+SKILLS AND EXPERTISE
+Programming Languages: Python | C | C++ | JavaScript | SQL | MATLAB *
+Frameworks and libraries: C++ STL | Pandas | NumPy | SciPy | Matplotlib | Scikit-learn | TensorFlow * | PyTorch * | React.js
+Tools and Software: Jupyter Notebook | VS Code | Google Colab | Github | Autodesk * (* indicates intermediate proficiency)
+COURSEWORK INFORMATION
+Algorithms I # | Linear Algebra and Numerical Analysis | Probability and Statistics | Programming and Data structures # | Computer
+Application in Metallurgical Processes# | Data-Driven Evolutionary Algorithms in Science and Engineering| Python for Data Science
+| Statistics II | Machine Learning Foundation | Tools in Data Science ( # includes laboratory component)
+POSITIONS OF RESPONSIBILITY
+Head - Sponsorship COMPOSIT IIT Kharagpur Nov’24 - Present
+• Managed and led sponsorship acquisition for COMPOSIT’25, securing funding from diverse partners (Buehler, Pizza Hut, etc.)
+• Drove marketing and partner collaboration efforts that contributed to a 3x increase (from 200) in event footfall
+• Organized and hosted major events, including Technova (Research Paper Presentation) and Ideathon (Innovative Idea Pitching).
+Secretary - Social and Cultural Azad Hall of Residence IIT Kharagpur Oct’24 - Apr’25
+• Mentored our literary team of 10 sophomores to perform in the Gold winning Illumination and Rangoli’24
+• Coordinated different General Championship 2025 events, including WTGW, Hindi Elocution, Street Play, TnC modelling
+ACHIEVEMENTS AND EXTRA CURRICULAR
+• Awarded the Best Volunteer Award, NSS unit 15, 2024-25 for my contribution to the development of Soledahar Village
+• Active member of Hall Literary, Short Film, and Clay Modelling teams, contributing to inter-hall competitions
+• Led a 25-member wing as Representative, ensuring active engagement in intra-hall events and strong team cohesion
+1

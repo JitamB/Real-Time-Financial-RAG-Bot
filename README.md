@@ -1,6 +1,6 @@
 # 📈 DataQuest: Real-Time Financial RAG
 
-DataQuest is a **real-time Retrieval-Augmented Generation (RAG)** engine built for financial analysis. It doesn't just "search" a static database—it listens to live stock markets, processes news streams, and reads uploaded documents instantly to provide up-to-the-second answers using **LLMs**.
+This model is a **real-time Retrieval-Augmented Generation (RAG)** engine built for financial analysis. It doesn't just "search" a static database—it listens to live stock markets, processes news streams, and reads uploaded documents instantly to provide up-to-the-second answers using **LLMs**.
 
 ---
 
@@ -66,7 +66,7 @@ Here is the step-by-step flow when you ask a question:
 *   Python 3.10+
 *   API Keys:
     *   **Groq API Key** (for LLM)
-    *   **Alpha Vantage** or **NewsAPI** (optional, for live data)
+    *   **Alpha Vantage** and **NewsAPI**
 
 ### 2. Installation
 Clone the repo and install dependencies:
@@ -75,7 +75,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Configuration
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (an example fiel has been added):
 ```ini
 GROQ_API_KEY=gsk_...
 ALPHA_VANTAGE_KEY=...
@@ -93,7 +93,7 @@ python app.py
 ```bash
 python -m streamlit run dashboard.py
 ```
-
+> Now you can open this using the localhost link ususally `http://localhost:8501/`
 ---
 
 ## 📂 Project Structure

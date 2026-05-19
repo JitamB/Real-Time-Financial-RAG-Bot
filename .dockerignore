@@ -1,0 +1,22 @@
+.git
+.gitignore
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+Cache/
+*.log
+.env
+.DS_Store
+tests/
+# legacy pre-rewrite artifacts / data the image must not bake in
+QnA/
+chats/
+live_data/
+stream_data.jsonl
+processed_news.csv
+file_tracker.json
+answers.db
+PS/

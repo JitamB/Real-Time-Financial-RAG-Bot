@@ -1,12 +1,35 @@
+# --- OS / editor ---
 .DS_Store
 .vscode/*
+.idea/
+
+# --- Secrets ---
 .env
-__pycache__
-# *.db
-# processed_news.csv
-chats/
-# stream_data.jsonl
-# file_tracker.json
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+venv/
+.venv/
+
+# --- Pathway runtime state (regenerated; never commit) ---
+Cache/
 *.log
+
+# --- Live document drop folder: keep the dir + seed fixtures, ignore ad-hoc demo files ---
+data/docs/*
+!data/docs/.gitkeep
+!data/docs/seed_*
+
+# --- Obsolete legacy artifacts from the pre-Pathway-rewrite app (do not track) ---
+answers.db
+QnA/
+chats/
+stream_data.jsonl
+processed_news.csv
+file_tracker.json
 debug_sync.txt
-debug_api.key
+debug_api.py
+live_data/

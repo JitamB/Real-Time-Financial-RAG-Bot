@@ -1,0 +1,61 @@
+# Two services: the Pathway RAG backend (REST :8000) and the Streamlit UI (:8501).
+#
+# The ./data bind-mount is what makes the liveness demo work end-to-end: editing
+# or deleting a file on the host propagates into the container's fs watcher and
+# the answer changes within seconds — no restart.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-app
+    env_file: .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data        # live document drop folder (Channel A)
+      - ./Cache:/app/Cache      # Pathway UDF/persistence cache (survives restarts)
+    healthcheck:
+      # Pathway REST endpoints are POST. Long start_period: cold embedder load.
+      test:
+        - CMD
+        - curl
+        - -fsS
+        - -X
+        - POST
+        - http://localhost:8000/v1/statistics
+        - -H
+        - Content-Type: application/json
+        - -d
+        - "{}"
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 120s
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: rag-ui
+    env_file: .env
+    environment:
+      RAG_BACKEND_URL: "http://app:8000"
+    ports:
+      - "8501:8501"
+    depends_on:
+      app:
+        condition: service_healthy
+    command: >
+      streamlit run ui/ui.py
+      --server.port=8501
+      --server.address=0.0.0.0
+    volumes:
+      - ./ui:/app/ui
+      - ./data:/app/data
+    restart: unless-stopped

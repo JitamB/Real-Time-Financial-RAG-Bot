@@ -22,6 +22,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -c "from sentence_transformers import SentenceTransformer; \
 SentenceTransformer('BAAI/bge-small-en-v1.5')"
 
+# Pre-download the default FlashRank reranker model into the same cache dir
+# Pathway's FlashRankReranker uses at runtime (model_cache_dir='flashrank_cache'
+# relative to WORKDIR /app) so the first reranked query is fast and offline.
+RUN python -c "from flashrank import Ranker; \
+Ranker(model_name='ms-marco-TinyBERT-L-2-v2', cache_dir='/app/flashrank_cache')"
+
 COPY realtime_rag/ ./realtime_rag/
 COPY ui/ ./ui/
 COPY data/docs/ ./data/docs/

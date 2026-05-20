@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "realtime-rag"
+version = "1.0.0"
+description = "Advanced real-time incremental RAG on Pathway: add/modify/delete propagate live with no restart or batch re-indexing."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [{ name = "Jitam Barman" }]
+# NOTE: we pin pathway core + the libs it actually imports instead of the
+# `pathway[xpack-llm]` extra (which makes pip fail with `resolution-too-deep`).
+# docling/pdf2image/unstructured are MANDATORY to import pathway.xpacks.llm in
+# 0.30.1 despite being documented "optional" — see requirements.txt note.
+dependencies = [
+    "pathway==0.30.1",
+    "docling>=2.27,<2.67.0",
+    "docling-core>=2.55,<2.58.0",
+    "python-docx>=1.1.2",
+    "pdf2image>=1.17",
+    "unstructured>=0.15,<0.19",
+    "pillow>=10",
+    "numpy>=1.26,<2",
+    "sentence-transformers>=3.0,<4",
+    "usearch>=2.12,<3",
+    "litellm>=1.50,<1.77.3",
+    "openai>=1.60,<2",
+    "groq>=0.11,<1",
+    "tiktoken>=0.7,<1",
+    "pydantic-settings>=2.4,<3",
+    "python-dotenv>=1.0,<2",
+    "requests>=2.31,<3",
+    "yfinance>=0.2.40,<1",
+    "pypdf>=4.0,<6",
+]
+
+[project.optional-dependencies]
+ui = ["streamlit>=1.40,<2"]
+dev = ["pytest>=8.0,<9", "pytest-timeout>=2.3,<3"]
+
+[project.scripts]
+realtime-rag = "realtime_rag.app:main"
+
+[tool.setuptools]
+packages = [
+    "realtime_rag",
+    "realtime_rag.connectors",
+    "realtime_rag.pipeline",
+    "realtime_rag.server",
+    "realtime_rag.observability",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --timeout=120"
+filterwarnings = ["ignore::DeprecationWarning"]

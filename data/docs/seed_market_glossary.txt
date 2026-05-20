@@ -1,0 +1,11 @@
+Market Glossary (seed document)
+
+- Market capitalization: total value of a company's outstanding shares.
+- P/E ratio: share price divided by earnings per share.
+- Volatility: the degree of variation in a trading price over time.
+- Sentiment: the overall attitude of investors toward a security or market,
+  often inferred from news flow and price action.
+- Drawdown: the peak-to-trough decline during a specific period for an investment.
+
+This is a seed fixture. The live finance/news feed (Channel B) and any files you
+drop into data/docs/ (Channel A) are retrieved alongside this document.

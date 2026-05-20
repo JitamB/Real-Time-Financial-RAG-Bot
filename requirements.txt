@@ -1,11 +1,55 @@
-pathway==0.11.0
-# openai>=1.0.0
-groq==1.0.0
-streamlit==1.53.0
-alpha_vantage==3.0.0
-pandas==2.1.4
-python-dotenv==0.21.0
-watchdog==2.1.6
-requests==2.31.0
-pypdf==6.6.0
-yfinance==1.0
+# Real-Time Incremental RAG on Pathway — pinned runtime dependencies.
+# Python 3.11 (matches the pathwaycom/pathway base image and the local venv).
+#
+# WHY THIS LIST LOOKS THE WAY IT DOES (non-obvious, learned by verification):
+#
+# 1. We deliberately do NOT use `pathway[xpack-llm]`. That extra pulls
+#    langchain + llama-index + a transitive graph so deep that pip aborts with
+#    `resolution-too-deep`. We pin pathway core + only the libs it actually
+#    imports, with lower bounds, to keep the resolver shallow & reproducible.
+#
+# 2. In pathway 0.30.1, `pathway/xpacks/llm/__init__.py` eagerly imports every
+#    submodule, and `_parser_utils.py` does a *runtime* (not TYPE_CHECKING)
+#    `with optional_imports("xpack-llm-docs"): import docling...`. So although
+#    docling / pdf2image / unstructured are documented as "optional", they are
+#    in practice MANDATORY just to `import pathway.xpacks.llm` at all. They are
+#    pinned here. (The genuinely heavy, feature-gated bits of xpack-llm-docs —
+#    paddleocr, unstructured[all-docs] — are NOT needed and intentionally omitted.)
+
+pathway==0.30.1
+
+# --- Mandatory for `import pathway.xpacks.llm` (see note 2) ---
+docling>=2.27,<2.67.0
+docling-core>=2.55,<2.58.0
+python-docx>=1.1.2
+pdf2image>=1.17
+unstructured>=0.15,<0.19
+pillow>=10
+numpy>=1.26,<2
+
+# --- Embeddings (local default; hosted optional via config) ---
+sentence-transformers>=3.0,<4
+usearch>=2.12,<3
+
+# --- LLM access (Groq via LiteLLM "groq/" provider; openai SDK is imported by
+#     pathway.xpacks.llm.llms even when unused) ---
+litellm>=1.50,<1.77.3
+openai>=1.60,<2
+groq>=0.11,<1
+
+# --- Splitter token counting ---
+tiktoken>=0.7,<1
+
+# --- Config / IO / data sources ---
+pydantic-settings>=2.4,<3
+python-dotenv>=1.0,<2
+requests>=2.31,<3
+yfinance>=0.2.40,<1
+pypdf>=4.0,<6
+
+# --- UI ---
+streamlit>=1.40,<2
+
+# --- Tests ---
+pytest>=8.0,<9
+pytest-timeout>=2.3,<3

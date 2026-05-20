@@ -43,6 +43,42 @@ if "messages" not in st.session_state:
 if "suggested" not in st.session_state:
     st.session_state.suggested = None
 
+# ── Search scope (jmespath metadata filter) + multi-turn history ──────────────
+# Only finance_feed rows carry source="finance_feed"; fs-docs have no `source`
+# key (jmespath: absent → null → `null != x` is true), so this cleanly splits
+# uploaded documents from the live market/news channel.
+SCOPE_FILTERS = {
+    "All sources": None,
+    "Documents only": "source != `finance_feed`",
+    "Live market only": "source == `finance_feed`",
+}
+_CHAT_HISTORY_TURNS = int(os.environ.get("CHAT_HISTORY_TURNS", "3"))
+
+
+def _history_pairs() -> list[tuple[str, str]] | None:
+    """Prior turns (excluding the just-appended current question), capped to
+    the last N exchanges. None disables multi-turn (backend is stateless)."""
+    if _CHAT_HISTORY_TURNS <= 0:
+        return None
+    prior = st.session_state.messages[:-1]
+    if not prior:
+        return None
+    recent = prior[-(_CHAT_HISTORY_TURNS * 2):]
+    return [(m["role"], m["content"]) for m in recent] or None
+
+
+# Pathway's BaseRAGQuestionAnswerer emits exactly this when the context does
+# not support an answer. Retrieval is recall-oriented (always returns top-k
+# nearest chunks, even when none are truly relevant), so on abstention those
+# chunks are noise — showing them under "No information found" looks broken.
+# Suppress the sources panel in that case only.
+_ABSTENTION = "no information found"
+
+
+def _is_abstention(answer: str) -> bool:
+    return (answer or "").strip().rstrip(".").lower() == _ABSTENTION
+
+
 client = get_client(os.environ.get("RAG_BACKEND_URL", DEFAULT_BACKEND))
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
@@ -136,6 +172,18 @@ with st.sidebar:
 
     st.divider()
 
+    # ── Search scope (metadata filter) ─────────────────────────────────────
+    st.markdown('<div class="section-label">Search Scope</div>', unsafe_allow_html=True)
+    _scope = st.radio(
+        "scope",
+        list(SCOPE_FILTERS.keys()),
+        label_visibility="collapsed",
+        help="Restrict retrieval: uploaded documents vs the live market/news feed.",
+    )
+    st.session_state["_scope_filter"] = SCOPE_FILTERS[_scope]
+
+    st.divider()
+
     # ── New chat ───────────────────────────────────────────────────────────
     if st.button("＋  New conversation", use_container_width=True):
         st.session_state.messages = []
@@ -194,7 +242,7 @@ if not st.session_state.messages:
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg.get("sources"):
+        if msg.get("sources") and not _is_abstention(msg["content"]):
             _sources = msg["sources"]
             _valid = [d for d in _sources if isinstance(d, dict) and d.get("text", "").strip()]
             if _valid:
@@ -223,13 +271,18 @@ if st.session_state.suggested:
     with st.chat_message("assistant"):
         with st.spinner("Querying live index…"):
             _t0 = time.monotonic()
-            _res = ask(client, _prompt)
+            _res = ask(
+                client,
+                _prompt,
+                filters=st.session_state.get("_scope_filter"),
+                history=_history_pairs(),
+            )
             _latency = time.monotonic() - _t0
         _answer = _res.get("response", "(no response)")
         _docs = _res.get("context_docs", []) or []
         st.markdown(_answer)
         _valid_docs = [d for d in _docs if isinstance(d, dict) and d.get("text", "").strip()]
-        if _valid_docs:
+        if _valid_docs and not _is_abstention(_answer):
             with st.expander(f"📎 {len(_valid_docs)} source{'s' if len(_valid_docs) != 1 else ''} retrieved", expanded=False):
                 for idx, doc in enumerate(_valid_docs, 1):
                     meta = doc.get("metadata", {}) if isinstance(doc.get("metadata"), dict) else {}
@@ -257,13 +310,18 @@ if prompt := st.chat_input("Ask about the market, news, or your documents…"):
     with st.chat_message("assistant"):
         with st.spinner("Querying live index…"):
             t0 = time.monotonic()
-            res = ask(client, prompt)
+            res = ask(
+                client,
+                prompt,
+                filters=st.session_state.get("_scope_filter"),
+                history=_history_pairs(),
+            )
             latency = time.monotonic() - t0
         answer = res.get("response", "(no response)")
         docs = res.get("context_docs", []) or []
         st.markdown(answer)
         valid_docs = [d for d in docs if isinstance(d, dict) and d.get("text", "").strip()]
-        if valid_docs:
+        if valid_docs and not _is_abstention(answer):
             with st.expander(f"📎 {len(valid_docs)} source{'s' if len(valid_docs) != 1 else ''} retrieved", expanded=False):
                 for idx, doc in enumerate(valid_docs, 1):
                     meta = doc.get("metadata", {}) if isinstance(doc.get("metadata"), dict) else {}

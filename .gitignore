@@ -18,6 +18,9 @@ venv/
 Cache/
 *.log
 
+# --- FlashRank reranker model cache (auto-downloaded on first run) ---
+flashrank_cache/
+
 # --- Live document drop folder: keep the dir + seed fixtures, ignore ad-hoc demo files ---
 data/docs/*
 !data/docs/.gitkeep

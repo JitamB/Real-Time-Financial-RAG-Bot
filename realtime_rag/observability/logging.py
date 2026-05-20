@@ -32,7 +32,18 @@ class _JsonFormatter(logging.Formatter):
 
 
 def configure_logging(level: int = logging.INFO) -> None:
-    """Idempotent root logging setup. Safe to call from every entrypoint."""
+    """Idempotent root logging setup. Safe to call from every entrypoint.
+
+    ``level`` controls *our* (``realtime_rag.*``) verbosity. The root logger is
+    pinned to WARNING so third-party INFO never reaches the terminal: Pathway's
+    ``pathway_engine.persistence.*`` snapshots checkpoint connector offsets to
+    ``./Cache`` roughly every second and, with the per-request ``aiohttp.access``
+    / root ``http_access`` lines, drown out the events that actually prove
+    dynamism. A genuine third-party WARNING/ERROR still propagates (real
+    problems aren't hidden); only the INFO-level churn is suppressed. Because
+    ``realtime_rag`` carries its own explicit level, its children inherit it
+    regardless of the root level.
+    """
     global _CONFIGURED
     if _CONFIGURED:
         return
@@ -41,10 +52,8 @@ def configure_logging(level: int = logging.INFO) -> None:
     root = logging.getLogger()
     root.handlers.clear()
     root.addHandler(handler)
-    root.setLevel(level)
-    # Pathway/HTTP libs are noisy at INFO; keep our events readable.
-    for noisy in ("httpx", "httpcore", "urllib3", "litellm", "sentence_transformers"):
-        logging.getLogger(noisy).setLevel(logging.WARNING)
+    root.setLevel(logging.WARNING)
+    logging.getLogger("realtime_rag").setLevel(level)
     _CONFIGURED = True
 
 

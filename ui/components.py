@@ -31,10 +31,38 @@ def backend_stats(client: RAGClient) -> dict | None:
         return None
 
 
-def ask(client: RAGClient, prompt: str) -> dict:
-    """Return ``{"response": str, "context_docs": [...]}`` (never raises)."""
+def _with_history(prompt: str, history: list[tuple[str, str]] | None) -> str:
+    """Prepend a short, clearly-delimited transcript so follow-ups resolve
+    ("how does that compare?" needs the prior turn). Bounded by the caller;
+    the prefix also seeds retrieval, so keep it terse."""
+    if not history:
+        return prompt
+    lines = [f"{role}: {text}" for role, text in history]
+    return (
+        "Conversation so far (for context only):\n"
+        + "\n".join(lines)
+        + f"\n\nCurrent question: {prompt}"
+    )
+
+
+def ask(
+    client: RAGClient,
+    prompt: str,
+    filters: str | None = None,
+    history: list[tuple[str, str]] | None = None,
+) -> dict:
+    """Return ``{"response": str, "context_docs": [...]}`` (never raises).
+
+    ``filters``: optional jmespath metadata filter (search-scope control).
+    ``history``: optional [(role, text), ...] of prior turns for multi-turn
+    follow-ups (backend stays stateless — context is prepended client-side).
+    """
     try:
-        resp = client.answer(prompt, return_context_docs=True)
+        resp = client.answer(
+            _with_history(prompt, history),
+            filters=filters,
+            return_context_docs=True,
+        )
         if isinstance(resp, dict):
             return resp
         return {"response": str(resp), "context_docs": []}
@@ -71,6 +99,15 @@ def add_document(filename: str, data: bytes, is_pdf: bool) -> tuple[bool, str]:
 
             reader = pypdf.PdfReader(__import__("io").BytesIO(data))
             text = "\n".join((p.extract_text() or "") for p in reader.pages)
+            # pypdf silently yields empty text for scanned/image-only PDFs.
+            # Reject explicitly so the user knows OCR is needed instead of
+            # an empty doc being indexed and producing "no information".
+            if not text.strip():
+                return (
+                    False,
+                    "PDF appears scanned/image-only — no extractable text "
+                    "(needs OCR; set PARSER_BACKEND=docling on the backend).",
+                )
             name = os.path.splitext(name)[0] + ".txt"
             payload = text.encode("utf-8")
         else:

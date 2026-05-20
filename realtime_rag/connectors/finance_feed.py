@@ -40,6 +40,11 @@ class FinanceFeedSubject(pw.io.python.ConnectorSubject):
         super().__init__()
         self._settings = settings
         self._stop = False
+        # key -> last emitted content signature. Lets us skip re-emitting a
+        # row whose material content is unchanged (NewsAPI returns the same
+        # top articles every poll; quotes rarely move between polls), avoiding
+        # redundant embed work in the DocumentStore.
+        self._last_sig: dict[str, str] = {}
 
     @property
     def _session_type(self) -> SessionType:
@@ -49,7 +54,15 @@ class FinanceFeedSubject(pw.io.python.ConnectorSubject):
     def on_stop(self) -> None:  # graceful shutdown hook
         self._stop = True
 
-    def _emit(self, key: str, text: str, kind: str) -> None:
+    def _emit(self, key: str, text: str, kind: str, signature: str) -> bool:
+        """Upsert a row unless its content signature is unchanged.
+
+        Returns True if a row was emitted, False if skipped (dedup). The
+        ``ts``-only delta never changes the signature, so an unchanged quote/
+        article is a true no-op instead of a redundant re-embed.
+        """
+        if self._settings.news_dedup and self._last_sig.get(key) == signature:
+            return False
         self.next(
             key=key,
             data=text.encode("utf-8"),
@@ -57,6 +70,8 @@ class FinanceFeedSubject(pw.io.python.ConnectorSubject):
             # context on; keep it human-readable for the demo.
             _metadata={"path": key, "kind": kind, "source": "finance_feed"},
         )
+        self._last_sig[key] = signature
+        return True
 
     def run(self) -> None:
         s = self._settings
@@ -70,17 +85,28 @@ class FinanceFeedSubject(pw.io.python.ConnectorSubject):
         last_news = 0.0
         while not self._stop:
             try:
+                emitted = skipped = 0
                 for q in market_clients.fetch_quotes(timeout=s.request_timeout_s):
-                    self._emit(q.key, q.as_document(), "quote")
+                    if self._emit(q.key, q.as_document(), "quote", q.content_signature):
+                        emitted += 1
+                    else:
+                        skipped += 1
 
                 now = time.monotonic()
                 if now - last_news >= s.news_poll_seconds:
                     for a in market_clients.fetch_news(
                         s.newsapi_key, timeout=s.request_timeout_s
                     ):
-                        self._emit(a.key, a.as_document(), "news")
+                        if self._emit(a.key, a.as_document(), "news", a.content_signature):
+                            emitted += 1
+                        else:
+                            skipped += 1
                     last_news = now
 
+                if emitted or skipped:
+                    log_event(
+                        log, "finance_feed_cycle", emitted=emitted, deduped=skipped
+                    )
                 # Push this batch to the engine so the index updates promptly.
                 self.commit()
             except Exception as exc:  # never let the connector thread die

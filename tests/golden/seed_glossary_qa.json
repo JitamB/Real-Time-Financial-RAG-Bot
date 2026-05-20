@@ -1,0 +1,38 @@
+{
+  "_comment": "Golden Q/A grounded ONLY in data/docs/seed_market_glossary.txt (a committed seed_* fixture, so this set is reproducible). keywords = case-insensitive substrings ALL expected in a faithful answer.",
+  "grounded_in": "data/docs/seed_market_glossary.txt",
+  "pairs": [
+    {
+      "question": "What is market capitalization?",
+      "keywords": ["total value", "outstanding shares"]
+    },
+    {
+      "question": "Define the P/E ratio.",
+      "keywords": ["share price", "earnings per share"]
+    },
+    {
+      "question": "How is the P/E ratio calculated?",
+      "keywords": ["share price", "divided", "earnings per share"]
+    },
+    {
+      "question": "What does volatility mean?",
+      "keywords": ["variation", "trading price"]
+    },
+    {
+      "question": "What is the degree of variation in a trading price over time called?",
+      "keywords": ["volatility"]
+    },
+    {
+      "question": "What is market sentiment?",
+      "keywords": ["attitude", "investors"]
+    },
+    {
+      "question": "What is a drawdown?",
+      "keywords": ["peak", "trough", "decline"]
+    },
+    {
+      "question": "Which metric describes the peak-to-trough decline for an investment?",
+      "keywords": ["drawdown"]
+    }
+  ]
+}

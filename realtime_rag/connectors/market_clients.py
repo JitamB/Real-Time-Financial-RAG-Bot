@@ -46,6 +46,13 @@ class Quote:
         """Primary key for upsert: one live row per symbol."""
         return f"quote::{self.symbol}"
 
+    @property
+    def content_signature(self) -> str:
+        """Hash of the *material* fields only — excludes ``ts`` so an
+        unchanged price polled again is recognised as a no-op (no re-embed)."""
+        raw = f"{self.symbol}|{self.company}|{self.price:.4f}|{self.change_pct:.4f}"
+        return hashlib.sha1(raw.encode("utf-8", "ignore")).hexdigest()
+
     def as_document(self) -> str:
         return (
             f"[Stock quote — {self.company} ({self.symbol})] "
@@ -68,6 +75,13 @@ class Article:
         """Primary key for upsert: stable per article URL (corrections replace)."""
         digest = hashlib.sha1(self.url.encode("utf-8", "ignore")).hexdigest()[:16]
         return f"news::{digest}"
+
+    @property
+    def content_signature(self) -> str:
+        """Hash of the *material* fields only — excludes ``ts`` so the same
+        article re-returned by NewsAPI next poll is a no-op (no re-embed)."""
+        raw = f"{self.title}|{self.content}|{self.source}|{self.url}"
+        return hashlib.sha1(raw.encode("utf-8", "ignore")).hexdigest()
 
     def as_document(self) -> str:
         return (

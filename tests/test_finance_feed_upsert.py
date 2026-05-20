@@ -15,10 +15,13 @@ from __future__ import annotations
 import subprocess
 import sys
 import textwrap
+from unittest.mock import Mock
 
 from pathway.internals.api import SessionType
 
+import realtime_rag.config as cfg
 from realtime_rag.connectors.finance_feed import FinanceFeedSubject
+from realtime_rag.connectors.market_clients import Article, Quote
 
 
 def test_subject_declares_upsert_and_stop(settings):
@@ -27,6 +30,47 @@ def test_subject_declares_upsert_and_stop(settings):
     assert subj._stop is False
     subj.on_stop()
     assert subj._stop is True
+
+
+def test_content_signature_excludes_timestamp():
+    # ts must NOT affect the signature, or dedup never triggers (every poll
+    # stamps a fresh ts). A material change MUST change the signature.
+    q1 = Quote("AAPL", "Apple", 100.0, 1.5, ts="2026-01-01T00:00:00Z")
+    q2 = Quote("AAPL", "Apple", 100.0, 1.5, ts="2026-01-01T00:05:00Z")
+    q3 = Quote("AAPL", "Apple", 101.0, 1.5, ts="2026-01-01T00:00:00Z")
+    assert q1.content_signature == q2.content_signature  # ts-only delta
+    assert q1.content_signature != q3.content_signature  # price moved
+
+    a1 = Article("T", "body", "Src", "http://x/1", ts="2026-01-01T00:00:00Z")
+    a2 = Article("T", "body", "Src", "http://x/1", ts="2026-01-01T01:00:00Z")
+    a3 = Article("T", "body CORRECTED", "Src", "http://x/1", ts="2026-01-01T00:00:00Z")
+    assert a1.content_signature == a2.content_signature
+    assert a1.content_signature != a3.content_signature
+
+
+def test_emit_dedup_skips_unchanged(settings):
+    # news_dedup=True (default): identical content signature -> no re-emit
+    # (no redundant re-embed); a changed signature DOES re-emit.
+    subj = FinanceFeedSubject(settings)
+    subj.next = Mock()  # shadow ConnectorSubject.next; capture emissions
+
+    assert subj._emit("quote::AAPL", "AAPL @ $100", "quote", "sigA") is True
+    assert subj._emit("quote::AAPL", "AAPL @ $100", "quote", "sigA") is False
+    assert subj._emit("quote::AAPL", "AAPL @ $101", "quote", "sigB") is True
+    assert subj.next.call_count == 2  # the dedup'd middle call did not emit
+
+
+def test_emit_dedup_disabled(monkeypatch):
+    # NEWS_DEDUP=false -> every poll re-emits even if nothing changed.
+    monkeypatch.setenv("NEWS_DEDUP", "false")
+    cfg._settings = None
+    s = cfg.Settings()
+    assert s.news_dedup is False
+    subj = FinanceFeedSubject(s)
+    subj.next = Mock()
+    assert subj._emit("quote::AAPL", "AAPL @ $100", "quote", "sigA") is True
+    assert subj._emit("quote::AAPL", "AAPL @ $100", "quote", "sigA") is True
+    assert subj.next.call_count == 2
 
 
 _PROG = textwrap.dedent(

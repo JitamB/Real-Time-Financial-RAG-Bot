@@ -37,8 +37,16 @@ litellm>=1.50,<1.77.3
 openai>=1.60,<2
 groq>=0.11,<1
 
-# --- Splitter token counting ---
+# --- Splitter token counting + sentence-aware recursive splitter ---
+# langchain-text-splitters backs splitters.RecursiveSplitter (the default,
+# token-overlap chunking); without it Pathway falls back to TokenCountSplitter.
 tiktoken>=0.7,<1
+langchain-text-splitters>=0.2,<0.4
+
+# --- Re-ranking (two-stage retrieval; default backend) ---
+# flashrank powers rerankers.FlashRankReranker (tiny TinyBERT cross-encoder).
+# The cross_encoder backend reuses sentence-transformers (already pinned above).
+flashrank>=0.2.9,<0.3
 
 # --- Config / IO / data sources ---
 pydantic-settings>=2.4,<3

@@ -73,7 +73,39 @@ def build_parser(settings: Settings) -> pw.UDF:
 
 
 def build_splitter(settings: Settings) -> pw.UDF:
-    log_event(log, "splitter_init", max_tokens=settings.chunk_max_tokens)
+    """``recursive`` (default): sentence-aware split with token overlap so a
+    concept spanning a chunk boundary stays retrievable. ``token``: hard
+    token-count cuts (no overlap), the lean fallback.
+
+    ``encoding_name="cl100k_base"`` makes RecursiveSplitter count in *tokens*
+    (not characters), so chunk_size/overlap stay consistent with the token
+    splitter. If langchain-text-splitters is unavailable we degrade to the
+    token splitter rather than break the graph.
+    """
+    if settings.splitter_backend == "recursive":
+        try:
+            sp = splitters.RecursiveSplitter(
+                chunk_size=settings.chunk_max_tokens,
+                chunk_overlap=settings.chunk_overlap,
+                encoding_name="cl100k_base",
+            )
+            log_event(
+                log,
+                "splitter_init",
+                backend="recursive",
+                chunk_size=settings.chunk_max_tokens,
+                chunk_overlap=settings.chunk_overlap,
+            )
+            return sp
+        except Exception as exc:  # missing langchain-text-splitters etc.
+            log_event(
+                log,
+                "splitter_fallback",
+                level=30,
+                requested="recursive",
+                error=str(exc),
+            )
+    log_event(log, "splitter_init", backend="token", max_tokens=settings.chunk_max_tokens)
     return splitters.TokenCountSplitter(max_tokens=settings.chunk_max_tokens)
 
 

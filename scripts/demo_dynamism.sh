@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ---------------------------------------------------------------------------
-# Demonstrable Dynamism — the 35% liveness proof.
+# Demonstrable Dynamism — the headline liveness proof.
 #
 # Proves: adding / modifying / deleting a file in the watched docs folder
 # changes the RAG answer within seconds, with NO restart and NO re-indexing.
